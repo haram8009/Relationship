@@ -85,7 +85,9 @@ def new_comment(request, blog_id):
     return render(request, 'new_comment.html', {'blog': blog})
 
 def like(request, blog_id):
-    # TODO: 좋아요 중복 막기
+    # [x]: 좋아요 중복 막기
+    if Like.objects.filter(author=request.user):
+        return redirect('detail', blog_id)
     like = Like()
     like.blog = get_object_or_404(Blog, pk=blog_id)
     like.author = request.user
