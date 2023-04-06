@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from .models import Blog, Comment, Tag
+from .models import Blog, Comment, Tag, Like
+from django.contrib.auth.models import User
 
 
 def home(request):
@@ -15,8 +16,9 @@ def detail(request, blog_id):
     blog = get_object_or_404(Blog, pk=blog_id)
     comments = Comment.objects.filter(blog=blog)
     tags = blog.tag.all()
-
-    return render(request, 'detail.html', {'blog': blog, 'comments': comments, 'tags': tags})
+    # [x]: 좋아요 개수 표시하기
+    likes = len(Like.objects.filter(blog=blog))
+    return render(request, 'detail.html', {'blog': blog, 'comments': comments, 'tags': tags, 'likes':likes})
 
 
 def new(request):
@@ -76,8 +78,16 @@ def create_comment(request, blog_id):
 
 
 def new_comment(request, blog_id):
+    # [x] :로그인 하지 않았을 때 댓글 달기 버튼을 누르면 로그인 페이지로 이동하게 하기
+    if request.user.is_anonymous:
+        return redirect('login')
     blog = get_object_or_404(Blog, pk=blog_id)
     return render(request, 'new_comment.html', {'blog': blog})
 
-
-# TODO: like 기능 구현
+def like(request, blog_id):
+    # TODO: 좋아요 중복 막기
+    like = Like()
+    like.blog = get_object_or_404(Blog, pk=blog_id)
+    like.author = request.user
+    like.save()
+    return redirect('detail', blog_id)
