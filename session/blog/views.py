@@ -85,6 +85,9 @@ def new_comment(request, blog_id):
     return render(request, 'new_comment.html', {'blog': blog})
 
 def like(request, blog_id):
+    # [x] :로그인 하지 않았을 때 좋아요 버튼을 누르면 로그인 페이지로 이동하게 하기
+    if request.user.is_anonymous:
+        return redirect('login')
     # [x]: 좋아요 중복 막기
     if Like.objects.filter(author=request.user):
         return redirect('detail', blog_id)
